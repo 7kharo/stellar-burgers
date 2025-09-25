@@ -13,17 +13,16 @@ import '../../index.css';
 import styles from './app.module.css';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from '../../services/store';
 import { useEffect } from 'react';
 import { getIngredients } from '../../slices/ingredientsSlice';
-import { AppDispatch } from '../../services/store';
 import { ProtectedRoute } from '../protected-route/protected-route';
 import { getUser, setAuthUser } from '../../slices/userSlice';
 import { getCookie } from '../../utils/cookie';
 
 const App = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const location = useLocation();
 
   const background = location.state?.background;
@@ -126,9 +125,11 @@ const App = () => {
           <Route
             path='/profile/orders/:number'
             element={
-              <Modal title={'Информация о заказе'} onClose={handleClose}>
-                <OrderInfo />
-              </Modal>
+              <ProtectedRoute authOnly>
+                <Modal title={'Информация о заказе'} onClose={handleClose}>
+                  <OrderInfo />
+                </Modal>
+              </ProtectedRoute>
             }
           />
         </Routes>

@@ -7,11 +7,10 @@ import {
   selectFeedData,
   selectFeedLoading
 } from '../../slices/feedSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 
 export const Feed: FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   /** TODO: взять переменную из стора */
   const feedData = useSelector(selectFeedData);
   const orders: TOrder[] = feedData.orders;

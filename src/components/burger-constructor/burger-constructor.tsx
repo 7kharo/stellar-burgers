@@ -1,7 +1,7 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from '../../services/store';
 import {
   clearAllIngredients,
   selectConstructorBun,
@@ -15,13 +15,12 @@ import {
 } from '../../slices/orderSlice';
 import { selectAuthUser } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
-import { AppDispatch } from '../../services/store';
 
 export const BurgerConstructor: FC = () => {
   /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
 
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
 
   const ingredients = useSelector(selectConstructorItems);
   const bun = useSelector(selectConstructorBun);
@@ -32,6 +31,12 @@ export const BurgerConstructor: FC = () => {
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderData);
   const isAuthUser = useSelector(selectAuthUser);
+
+  useEffect(() => {
+    if (orderModalData) {
+      dispatch(clearOrder());
+    }
+  }, [dispatch]);
 
   const onOrderClick = () => {
     if (!isAuthUser) {

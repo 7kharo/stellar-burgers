@@ -50,12 +50,22 @@ const updateUser = createAsyncThunk(
 
 const getUser = createAsyncThunk(
   'user/getUser',
-  async () => (await getUserApi()).user
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getUserApi();
+      return response.user;
+    } catch (error: any) {
+      deleteCookie('accessToken');
+      localStorage.removeItem('refreshToken');
+      return rejectWithValue('Ошибка авторизации');
+    }
+  }
 );
 
 export type TUserState = {
   user: TUser;
   isAuth: boolean;
+  isAuthCheck: boolean;
   isLoading: boolean;
   errorText: string;
 };
@@ -66,6 +76,7 @@ const initialState: TUserState = {
     name: ''
   },
   isAuth: false,
+  isAuthCheck: false,
   isLoading: false,
   errorText: ''
 };
@@ -84,7 +95,8 @@ const userSlice = createSlice({
     selectUserError: (state) => state.errorText,
     selectUserLoading: (state) => state.isLoading,
     selectIsUserAuth: (state) =>
-      state.user.name !== '' && state.user.email !== ''
+      state.user.name !== '' && state.user.email !== '',
+    selectIsAuthCheck: (state) => state.isAuthCheck
   },
   extraReducers: (builder) => {
     builder
@@ -158,6 +170,7 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.user = action.payload;
         state.isAuth = true;
+        state.isAuthCheck = true;
       })
       .addCase(getUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -165,6 +178,7 @@ const userSlice = createSlice({
           action.error.message || 'Ошибка запроса данных пользователя';
         state.user = { email: '', name: '' };
         state.isAuth = false;
+        state.isAuthCheck = true;
       });
   }
 });
@@ -175,7 +189,8 @@ export const {
   selectAuthUser,
   selectUserError,
   selectUserLoading,
-  selectIsUserAuth
+  selectIsUserAuth,
+  selectIsAuthCheck
 } = userSlice.selectors;
 export { loginUser, logoutUser, registerUser, updateUser, getUser };
 export default userSlice.reducer;

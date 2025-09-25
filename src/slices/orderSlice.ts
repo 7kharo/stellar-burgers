@@ -1,10 +1,31 @@
 import { getOrderByNumberApi, orderBurgerApi } from '@api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
+import { getCookie } from '../utils/cookie';
+
+// const orderBurger = createAsyncThunk(
+//   'order/orderBurger',
+//   async (ingredients: string[]) => (await orderBurgerApi(ingredients)).order
+// );
 
 const orderBurger = createAsyncThunk(
   'order/orderBurger',
-  async (ingredients: string[]) => (await orderBurgerApi(ingredients)).order
+  async (ingredients: string[], { rejectWithValue }) => {
+    try {
+      const token = getCookie('accessToken');
+      if (!token) {
+        return rejectWithValue('Требуется авторизация');
+      }
+      const response = await orderBurgerApi(ingredients);
+      if (!response.success) {
+        return rejectWithValue('Ошибка оформления заказа');
+      }
+
+      return response.order;
+    } catch (error: any) {
+      return rejectWithValue('Ошибка сервера');
+    }
+  }
 );
 
 const getOrderByNumber = createAsyncThunk(
