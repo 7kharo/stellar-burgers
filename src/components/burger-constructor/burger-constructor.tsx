@@ -13,7 +13,7 @@ import {
   selectOrderData,
   selectOrderRequest
 } from '../../slices/orderSlice';
-import { selectAuthUser } from '../../slices/userSlice';
+import { selectUser } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
@@ -30,7 +30,7 @@ export const BurgerConstructor: FC = () => {
   };
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderData);
-  const isAuthUser = useSelector(selectAuthUser);
+  const user = useSelector(selectUser);
 
   useEffect(() => {
     if (orderModalData) {
@@ -39,7 +39,7 @@ export const BurgerConstructor: FC = () => {
   }, [dispatch]);
 
   const onOrderClick = () => {
-    if (!isAuthUser) {
+    if (!user) {
       return navigate('/login', { replace: true });
     }
     if (constructorItems.bun && constructorItems.ingredients.length) {

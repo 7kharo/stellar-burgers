@@ -9,7 +9,7 @@ import {
 } from '@api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TUser } from '@utils-types';
-import { deleteCookie, setCookie } from '../utils/cookie';
+import { deleteCookie, getCookie, setCookie } from '../utils/cookie';
 
 const registerUser = createAsyncThunk(
   'user/registerUser',
@@ -48,34 +48,33 @@ const updateUser = createAsyncThunk(
   async (data: Partial<TRegisterData>) => (await updateUserApi(data)).user
 );
 
-const getUser = createAsyncThunk(
-  'user/getUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await getUserApi();
-      return response.user;
-    } catch (error: any) {
+const getUser = createAsyncThunk('user/getUser', async (_, { dispatch }) => {
+  const isTokenExists = (): boolean => !!getCookie('accessToken');
+
+  try {
+    if (isTokenExists()) {
+      const user = await getUserApi();
+      dispatch(setUser(user.user));
+    }
+  } catch (error: any) {
+    if (error.message.includes('403') || error.message.includes('401')) {
       deleteCookie('accessToken');
       localStorage.removeItem('refreshToken');
-      return rejectWithValue('Ошибка авторизации');
     }
+  } finally {
+    dispatch(setIsAuthChecked(true));
   }
-);
+});
 
 export type TUserState = {
-  user: TUser;
-  isAuth: boolean;
+  user: TUser | null;
   isAuthCheck: boolean;
   isLoading: boolean;
   errorText: string;
 };
 
 const initialState: TUserState = {
-  user: {
-    email: '',
-    name: ''
-  },
-  isAuth: false,
+  user: null,
   isAuthCheck: false,
   isLoading: false,
   errorText: ''
@@ -85,17 +84,17 @@ const userSlice = createSlice({
   name: 'userSlice',
   initialState,
   reducers: {
-    setAuthUser(state, action: PayloadAction<boolean>) {
-      state.isAuth = action.payload;
+    setUser(state, action: PayloadAction<TUser>) {
+      state.user = action.payload;
+    },
+    setIsAuthChecked(state, action: PayloadAction<boolean>) {
+      state.isAuthCheck = action.payload;
     }
   },
   selectors: {
     selectUser: (state) => state.user,
-    selectAuthUser: (state) => state.isAuth,
     selectUserError: (state) => state.errorText,
     selectUserLoading: (state) => state.isLoading,
-    selectIsUserAuth: (state) =>
-      state.user.name !== '' && state.user.email !== '',
     selectIsAuthCheck: (state) => state.isAuthCheck
   },
   extraReducers: (builder) => {
@@ -109,13 +108,11 @@ const userSlice = createSlice({
         (state, action: PayloadAction<TUser>) => {
           state.isLoading = false;
           state.user = action.payload;
-          state.isAuth = true;
         }
       )
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.errorText = action.error.message || 'Ошибка регистрации';
-        state.isAuth = false;
       })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
@@ -124,30 +121,22 @@ const userSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<TUser>) => {
         state.isLoading = false;
         state.user = action.payload;
-        state.isAuth = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.errorText = (action.payload as string) || 'Ошибка входа';
-        state.isAuth = false;
       })
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
         state.errorText = '';
-        state.isAuth = false;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
-        state.user = {
-          email: '',
-          name: ''
-        };
-        state.isAuth = false;
+        state.user = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
         state.errorText = action.error.message || 'Ошибка выхода из системы';
-        state.isAuth = false;
       })
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
@@ -161,35 +150,15 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.errorText =
           action.error.message || 'Ошибка обновления данных пользователя';
-      })
-      .addCase(getUser.pending, (state) => {
-        state.isLoading = true;
-        state.errorText = '';
-      })
-      .addCase(getUser.fulfilled, (state, action: PayloadAction<TUser>) => {
-        state.isLoading = false;
-        state.user = action.payload;
-        state.isAuth = true;
-        state.isAuthCheck = true;
-      })
-      .addCase(getUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorText =
-          action.error.message || 'Ошибка запроса данных пользователя';
-        state.user = { email: '', name: '' };
-        state.isAuth = false;
-        state.isAuthCheck = true;
       });
   }
 });
 
-export const { setAuthUser } = userSlice.actions;
+export const { setUser, setIsAuthChecked } = userSlice.actions;
 export const {
   selectUser,
-  selectAuthUser,
   selectUserError,
   selectUserLoading,
-  selectIsUserAuth,
   selectIsAuthCheck
 } = userSlice.selectors;
 export { loginUser, logoutUser, registerUser, updateUser, getUser };

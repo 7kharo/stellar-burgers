@@ -5,5 +5,5 @@ import { selectUser } from '../../slices/userSlice';
 
 export const AppHeader: FC = () => {
   const user = useSelector(selectUser);
-  return <AppHeaderUI userName={user.name || ''} />;
+  return <AppHeaderUI userName={user?.name || ''} />;
 };
