@@ -26,7 +26,7 @@ export const ProfileOrders: FC = () => {
     }
   }, [dispatch, user]);
 
-  console.log('ProfileOrders debug:', { orders, isLoading, error });
+  // console.log('ProfileOrders debug:', { orders, isLoading, error });
 
   if (isLoading) {
     return <Preloader />;
