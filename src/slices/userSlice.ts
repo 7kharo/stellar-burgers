@@ -48,20 +48,14 @@ const updateUser = createAsyncThunk(
   async (data: Partial<TRegisterData>) => (await updateUserApi(data)).user
 );
 
-const getUser = createAsyncThunk('user/getUser', async (_, { dispatch }) => {
-  const isTokenExists = (): boolean => !!getCookie('accessToken');
+const isTokenExists = (): boolean => !!getCookie('accessToken');
 
-  try {
-    if (isTokenExists()) {
-      const user = await getUserApi();
-      dispatch(setUser(user.user));
-    }
-  } catch (error: any) {
-    if (error.message.includes('403') || error.message.includes('401')) {
-      deleteCookie('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
-  } finally {
+const getUser = createAsyncThunk('user/getUser', async (_, { dispatch }) => {
+  if (isTokenExists()) {
+    getUserApi()
+      .then((user) => dispatch(setUser(user.user)))
+      .finally(() => dispatch(setIsAuthChecked(true)));
+  } else {
     dispatch(setIsAuthChecked(true));
   }
 });
