@@ -1,12 +1,7 @@
-import { getOrderByNumberApi, orderBurgerApi } from '@api';
+import { getOrderByNumberApi, orderBurgerApi } from '../utils/burger-api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
 import { getCookie } from '../utils/cookie';
-
-// const orderBurger = createAsyncThunk(
-//   'order/orderBurger',
-//   async (ingredients: string[]) => (await orderBurgerApi(ingredients)).order
-// );
 
 const orderBurger = createAsyncThunk(
   'order/orderBurger',
@@ -51,9 +46,9 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     clearOrder(state) {
-      (state.orderData = null),
+      ((state.orderData = null),
         (state.orderRequest = false),
-        (state.errorText = '');
+        (state.errorText = ''));
     }
   },
   selectors: {

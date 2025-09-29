@@ -1,4 +1,4 @@
-import { getFeedsApi, getOrdersApi } from '@api';
+import { getFeedsApi, getOrdersApi } from '../utils/burger-api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TOrder, TOrdersData } from '@utils-types';
 
@@ -41,36 +41,36 @@ const feedSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getFeed.pending, (state) => {
-        (state.isLoading = true), (state.errorText = '');
+        ((state.isLoading = true), (state.errorText = ''));
       })
       .addCase(
         getFeed.fulfilled,
         (state, action: PayloadAction<TOrdersData>) => {
-          (state.isLoading = false),
+          ((state.isLoading = false),
             (state.data = action.payload),
-            (state.errorText = '');
+            (state.errorText = ''));
         }
       )
       .addCase(getFeed.rejected, (state, action) => {
-        (state.isLoading = false),
+        ((state.isLoading = false),
           (state.errorText =
-            action.error.message || 'Не удалось загрузить данные с сервера');
+            action.error.message || 'Не удалось загрузить данные с сервера'));
       })
       .addCase(getMyOrders.pending, (state) => {
-        (state.isLoading = true), (state.errorText = '');
+        ((state.isLoading = true), (state.errorText = ''));
       })
       .addCase(
         getMyOrders.fulfilled,
         (state, action: PayloadAction<TOrder[]>) => {
-          (state.isLoading = false),
+          ((state.isLoading = false),
             (state.myOrders = action.payload),
-            (state.errorText = '');
+            (state.errorText = ''));
         }
       )
       .addCase(getMyOrders.rejected, (state, action) => {
-        (state.isLoading = false),
+        ((state.isLoading = false),
           (state.errorText =
-            action.error.message || 'Не удалось загрузить данные с сервера');
+            action.error.message || 'Не удалось загрузить данные с сервера'));
       });
   }
 });
