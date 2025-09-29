@@ -46,9 +46,9 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     clearOrder(state) {
-      (state.orderData = null),
+      ((state.orderData = null),
         (state.orderRequest = false),
-        (state.errorText = '');
+        (state.errorText = ''));
     }
   },
   selectors: {
